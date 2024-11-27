@@ -1,5 +1,3 @@
-# Investigation into Predicting Cooking Time using Machine Learning
-
 by Darsh Pawani (darshvpawani23@gmail.com)
 
 
@@ -40,10 +38,13 @@ I want
 
 ## Baseline Model
 1
+
 --- 
 ## Final Model
 2
+
 --- 
 ## Fairness Analysis
 3
+
 ---
