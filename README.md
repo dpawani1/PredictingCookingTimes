@@ -1,6 +1,6 @@
-# Investigation into Predicting Cooking Time using Machine Learning
+<h1 align="center">Investigation into Predicting Cooking Time using Machine Learning
 
-by Darsh Pawani (darshvpawani23@gmail.com)
+<p align="center">By Darsh Pawani (darshvpawani23@gmail.com)
 
 
 ----
