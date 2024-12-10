@@ -369,22 +369,26 @@ I do not consider this baseline model to be "good." While it provides a valuable
 
 ## Final Model
 
-The final model builds upon the baseline model by incorporating additional features and leveraging a more robust machine learning algorithm, Gradient Boosting Regressor. These improvements aim to enhance the model's ability to predict cooking times (`minutes`) by capturing more complex relationships in the data.
+The final model builds upon the baseline model by incorporating additional features, applying a logarithmic transformation, and leveraging a more robust machine learning algorithm, Gradient Boosting Regressor. These improvements enhance the model's ability to predict cooking times (`minutes`) by capturing more complex relationships in the data.
 
 ### Features Added
 1. **Interaction Term (`interaction`)**:
    - This term is the product of `n_ingredients` and `prop_protein`, capturing the combined effect of the number of ingredients and protein content on cooking time.
    - Recipes with a high number of ingredients and a high proportion of protein might correspond to complex, protein-rich meals that take longer to prepare, making this interaction term relevant to the prediction task.
 
-2. **Retained Top Tags**:
+2. **Logarithmic Transformation of `n_ingredients` (`log_ingredients`)**:
+   - I applied a logarithmic transformation (`log1p`) to the `n_ingredients` feature. This transformation reduces the impact of outliers, ensuring that recipes with an unusually high number of ingredients do not disproportionately influence the model.
+   - By making the feature distribution more uniform, this transformation improves the model's ability to learn patterns effectively.
+
+3. **Retained Top Tags**:
    - Only the top 10 most frequent tags were retained for OneHotEncoding. This ensures the inclusion of the most common recipe types while reducing noise and dimensionality from less frequent tags.
 
-These features were selected because they provide a richer representation of the underlying data-generating process. The interaction term accounts for non-linear relationships, while the top tags emphasize patterns from the most common recipe categories.
+These features were chosen based on their relevance to the prediction task and their ability to provide a richer representation of the underlying data-generating process. The interaction term captures non-linear relationships, the logarithmic transformation handles skewness and outliers, and the top tags emphasize patterns from frequently occurring recipe categories.
 
 ---
 
 ### Modeling Algorithm
-I used **Gradient Boosting Regressor** because it builds an ensemble of weak learners (decision trees) to iteratively minimize errors. This algorithm is well-suited for capturing complex interactions between features and handling non-linearities in the data.
+I used **Gradient Boosting Regressor** because it builds an ensemble of weak learners (decision trees) to iteratively minimize errors. This algorithm is particularly effective for capturing complex interactions between features and handling non-linearities in the data.
 
 ---
 
@@ -392,25 +396,28 @@ I used **Gradient Boosting Regressor** because it builds an ensemble of weak lea
 I used **GridSearchCV** to tune the following hyperparameters:
 - **`max_depth`**: Depth of each tree (values tested: 3, 5, 7).
 - **`min_samples_split`**: Minimum number of samples required to split an internal node (values tested: 2, 5, 10).
+- **`n_estimators`**: Number of boosting iterations (values tested: 50, 100, 150).
 
 The best-performing hyperparameters were:
 - **`max_depth`**: 3
-- **`min_samples_split`**: 5
+- **`min_samples_split`**: 2
+- **`n_estimators`**: 100
 
-These values balance model complexity and generalization, preventing overfitting while capturing sufficient detail in the data.
+These hyperparameters balance model complexity and generalization, ensuring the model effectively captures the variability in cooking times without overfitting.
 
 ---
 
 ### Model Performance
-- **Train MAE**: 119.45 minutes  
-- **Test MAE**: 115.69 minutes  
+- **Train MAE**: 115.18 minutes  
+- **Test MAE**: 116.11 minutes  
 
-Compared to the baseline model's test MAE of 118.47 minutes, the final model reduced the prediction error by approximately **2.78 minutes** on unseen data. This improvement demonstrates the value of the additional features and the Gradient Boosting Regressor in capturing the variability in cooking times more effectively.
+Compared to the baseline model's test MAE of 118.47 minutes, the final model reduced the prediction error by approximately **2.36 minutes** on unseen data. This improvement demonstrates the value of the additional features, transformations, and hyperparameter tuning in enhancing the model’s predictive accuracy.
 
 ---
 
 ### Conclusion
-The final model outperforms the baseline model in terms of test MAE, indicating better generalization to new data. By incorporating meaningful features like the interaction term and refining the modeling algorithm through hyperparameter tuning, the final model provides more accurate predictions of cooking times.
+The final model outperforms the baseline model in terms of test MAE, indicating better generalization to new data. By incorporating meaningful features like the interaction term, applying a logarithmic transformation to `n_ingredients`, and refining the model through hyperparameter tuning, the final model provides more accurate and robust predictions of cooking times.
+
 
 
 ----
