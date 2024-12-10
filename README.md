@@ -155,34 +155,55 @@ After cleaning, the dataset contains **234,429 rows** and **27 columns**. Below 
 
 ### 1. Histogram of Average Ratings
 
-![Histogram of Average Ratings](assets/average_rating_histogram.html)
-
 This histogram shows the distribution of average ratings for recipes. Most recipes are rated positively, with a cluster around 4.0 to 5.0.
+
+<iframe
+  src="assets/average_rating_histogram.html"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
 
 ---
 
 ### 2. Histogram of Calories (Filtered to 0–5,000)
 
-![Histogram of Calories](assets/calories_histogram.html)
-
 This histogram visualizes the calorie content of recipes, highlighting that most recipes are relatively low in calories.
 
+<iframe
+  src="assets/calories_histogram.html"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
+
 ---
+
+## Bivariate Analysis
 
 ### 1. Scatter Plot: Calories vs. Average Rating
 
-![Scatter Plot: Calories vs. Average Rating](assets/calories_vs_rating.html)
-
 This scatter plot examines the relationship between calorie content and average ratings, showing no significant trend.
 
+<iframe
+  src="assets/calories_vs_rating.html"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
+
 ---
-## Bivariate Analysis
 
 ### 2. Line Plot: Number of Ingredients vs. Average Rating
 
-![Line Plot: Ingredients vs. Average Rating](assets/ingredients_vs_rating.html)
-
 This line plot shows how the average rating changes with the number of ingredients, revealing potential trends in recipe complexity.
+
+<iframe
+  src="assets/ingredients_vs_rating.html"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
 
 ---
 
@@ -207,12 +228,56 @@ Below is the pivot table summarizing the mean, median, minimum, and maximum prop
 This pivot table highlights how the proportion of protein changes with cooking time. For shorter cooking times, protein proportions are more varied, while longer cooking times show more consistency, likely due to the nature of high-protein recipes like stews or roasts.
 
 
+
 ----
 
 ## Assessment of Missingness
 
-- **NMAR**: Missing data in some columns, such as `average_rating`, is likely Not Missing At Random (NMAR) because users only rate recipes they interact with. 
-- **MAR/MCAR**: Other missing values, like `tags` or `nutrition`, may be Missing at Random (MAR) due to inconsistencies in data entry.
+### NMAR Analysis
+
+I believe that the missingness of the `average_rating` column is **Not Missing At Random (NMAR)**. This is because users are less likely to leave a rating if they feel indifferent about the recipe or if they did not cook it. For example, users who felt strongly about a recipe, whether positively or negatively, would be more motivated to leave a rating. Indifferent users, on the other hand, might not find it worth their time to interact further by leaving a rating.
+
+Additionally, users who did not actually attempt the recipe might avoid rating it altogether, as they might not feel qualified to provide feedback. To better understand this missingness and determine if it could instead be Missing At Random (MAR), I would need additional data, such as user interaction logs indicating whether a recipe was viewed or saved without being rated.
+
+## Assessment of Missingness
+
+### Proportion of Protein and Average Rating Missingness
+
+I tested whether the missingness in `average_rating` depends on the proportion of protein in a recipe (`prop_protein`).
+
+- **Null Hypothesis**: The missingness of `average_rating` does not depend on `prop_protein`.
+- **Alternate Hypothesis**: The missingness of `average_rating` depends on `prop_protein`.
+- **Observed Statistic**: 0.0109
+- **P-value**: 0.0  
+- **Decision**: Since the p-value is less than the significance level of 0.05, I reject the null hypothesis. This suggests that the missingness of `average_rating` is dependent on `prop_protein`.
+
+<iframe
+  src="assets/prop_protein_missingness.html"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
+
+---
+
+### Cooking Time and Average Rating Missingness
+
+I tested whether the missingness in `average_rating` depends on the cooking time of the recipe (`minutes`).
+
+- **Null Hypothesis**: The missingness of `average_rating` does not depend on `minutes`.
+- **Alternate Hypothesis**: The missingness of `average_rating` depends on `minutes`.
+- **Observed Statistic**: 117.34
+- **P-value**: 0.036  
+- **Decision**: Since the p-value is less than the significance level of 0.05, I reject the null hypothesis. This suggests that the missingness of `average_rating` is dependent on `minutes`.
+
+<iframe
+  src="assets/minutes_missingness.html"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
+
+---
 
 ----
 
