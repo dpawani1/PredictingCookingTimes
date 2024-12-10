@@ -168,7 +168,7 @@ This histogram shows the distribution of average ratings for recipes. Most recip
 
 ### 2. Histogram of Calories (Filtered to 0–5,000)
 
-This histogram visualizes the calorie content of recipes, highlighting that most recipes are relatively low in calories.
+This histogram visualizes the calorie content of recipes, highlighting that most recipes are under 1000 calories.
 
 <iframe
   src="assets/calories_histogram.html"
