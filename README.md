@@ -279,38 +279,174 @@ I tested whether the missingness in `average_rating` depends on the cooking time
 
 ---
 
-----
+## Hypothesis Test: Do People Rate High-Protein Recipes Differently?
 
-## Hypothesis Testing
+I explored whether people rate high-protein recipes differently than low-protein recipes. High-protein recipes were classified as those with a proportion of protein (`prop_protein`) greater than 0.35, while low-protein recipes had `prop_protein` less than or equal to this threshold.
 
-**Null Hypothesis**:
-The mean rating of protein recipes is equal to that of non-protein recipes.
+To investigate, I conducted a permutation test with the following setup:
 
-**Alternative Hypothesis**:
-The mean rating of protein recipes is different from that of non-protein recipes.
+- **Null Hypothesis**: People rate high-protein and low-protein recipes on the same scale.
+- **Alternative Hypothesis**: People rate high-protein recipes differently than low-protein recipes.
+- **Test Statistic**: The difference in mean ratings between high-protein and low-protein recipes.
+- **Significance Level**: 0.05
 
-Using a permutation test, I found a statistically significant difference in ratings, suggesting that protein-rich recipes tend to have distinct ratings compared to others.
+### Observed Statistic and Permutation Test
+
+The observed difference in mean ratings was **-0.0234**. I performed a permutation test with 1,000 iterations to simulate the null distribution of mean differences. The p-value from this test was **0.004**.
+
+### Conclusion of Permutation Test
+
+Since the p-value is less than 0.05, I reject the null hypothesis. This suggests that people do not rate all recipes on the same scale and tend to rate high-protein recipes differently from low-protein ones. One possible explanation is that high-protein recipes cater to specific dietary preferences, which could influence user ratings.
+
+### Visualization of Null Distribution
+
+Below is an interactive visualization of the null distribution generated from the permutation test. The red dashed line represents the observed difference in means.
+
+<iframe
+  src="assets/protein_rating_hypothesis_test.html"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
+
 
 ----
 
 ## Framing a Prediction Problem
 
-I want to predict the **cooking time (in minutes)** for recipes based on their attributes, such as the number of ingredients, nutritional information, and tags. This is a regression problem, evaluated using **Mean Absolute Error (MAE)** to ensure interpretability and robustness against outliers.
+The goal of this experiment is to predict the **cooking time (minutes)** required to prepare a recipe based on its features. This is a **regression problem** since the response variable, `minutes`, is continuous and numerical.
+
+### Response Variable
+The response variable is `minutes`, which represents the cooking time of a recipe. I chose this variable because estimating preparation time helps users plan their meals effectively, making the analysis more practical and valuable.
+
+### Features for Prediction
+The features used for prediction are:
+- **`n_ingredients`**: The number of ingredients in the recipe.
+- **`prop_protein`**: The proportion of protein relative to total calories.
+- **`tags`**: Recipe tags indicating cuisine, course, or preparation style.
+
+These features are all available at the time of prediction. For example, `tags`, `n_ingredients`, and nutritional content are determined when the recipe is written, so they do not rely on future information.
+
+### Evaluation Metric
+I selected **Mean Absolute Error (MAE)** as the evaluation metric. MAE provides a clear interpretation of the average error in minutes, aligning with the goal of minimizing discrepancies in predicted cooking time. Unlike other metrics like RMSE, which give more weight to large errors, MAE treats all errors equally, making it more robust to outliers.
+
+### Justification
+By using only features that are available before cooking begins, this model ensures practicality in real-world scenarios. For instance, user reviews or ratings cannot be included as features because they are generated after the recipe has been used. This approach ensures the model offers actionable insights for users looking to estimate cooking time efficiently.
+
 
 ----
 
 ## Baseline Model
 
-The baseline model uses a simple **Linear Regression** trained on `n_ingredients` and `tags`. It provides a starting point with a test MAE of approximately **118.47** minutes, highlighting the need for improved feature engineering and modeling techniques.
+For my baseline model, I used features available at the time of prediction to estimate the cooking time (`minutes`). The features in the model are as follows:
+
+### Features in the Baseline Model
+1. **Quantitative**:
+   - **`n_ingredients`**: The number of ingredients in the recipe (numeric).
+   - **`prop_protein`**: The proportion of protein relative to total calories (numeric).
+
+2. **Nominal**:
+   - **`tags`**: Categorical tags associated with the recipe, such as cuisine, course, or preparation style (e.g., "desserts," "breakfast").
+
+### Encodings
+- For the nominal feature `tags`, I applied **OneHotEncoding**, retaining only the top 10 most frequent tags and grouping the rest into an "other" category to manage dimensionality.
+- Quantitative features (`n_ingredients` and `prop_protein`) were scaled using a **StandardScaler** to ensure all features were on comparable scales.
+
+### Model Description
+The baseline model uses a simple linear regression approach to predict the cooking time (`minutes`). This model serves as a foundational benchmark to assess the performance of more complex models developed later.
+
+### Model Performance
+- **Train MAE**: 2.06 minutes  
+- **Test MAE**: 118.47 minutes  
+
+The train MAE indicates that the model performs well on the training data. However, the significantly higher test MAE reveals that the baseline model struggles to generalize to new, unseen data.
+
+### Assessment of Baseline Model
+I do not consider this baseline model to be "good." While it provides a valuable starting point for comparison, the large gap between the train and test MAE suggests overfitting or inadequate feature representation. This baseline model highlights the need for additional feature engineering and more robust algorithms to capture the variability in cooking times more effectively.
+
 
 ----
 
 ## Final Model
 
-The final model incorporates additional features, including the proportion of protein (`prop_protein`) and interaction terms. A **Random Forest Regressor** was used to account for non-linear relationships, resulting in a test MAE of approximately **115.71** minutes. This improvement demonstrates the value of feature engineering in enhancing model performance.
+The final model builds upon the baseline model by incorporating additional features and leveraging a more robust machine learning algorithm, Gradient Boosting Regressor. These improvements aim to enhance the model's ability to predict cooking times (`minutes`) by capturing more complex relationships in the data.
+
+### Features Added
+1. **Interaction Term (`interaction`)**:
+   - This term is the product of `n_ingredients` and `prop_protein`, capturing the combined effect of the number of ingredients and protein content on cooking time.
+   - Recipes with a high number of ingredients and a high proportion of protein might correspond to complex, protein-rich meals that take longer to prepare, making this interaction term relevant to the prediction task.
+
+2. **Retained Top Tags**:
+   - Only the top 10 most frequent tags were retained for OneHotEncoding. This ensures the inclusion of the most common recipe types while reducing noise and dimensionality from less frequent tags.
+
+These features were selected because they provide a richer representation of the underlying data-generating process. The interaction term accounts for non-linear relationships, while the top tags emphasize patterns from the most common recipe categories.
+
+---
+
+### Modeling Algorithm
+I used **Gradient Boosting Regressor** because it builds an ensemble of weak learners (decision trees) to iteratively minimize errors. This algorithm is well-suited for capturing complex interactions between features and handling non-linearities in the data.
+
+---
+
+### Hyperparameters and Selection
+I used **GridSearchCV** to tune the following hyperparameters:
+- **`max_depth`**: Depth of each tree (values tested: 3, 5, 7).
+- **`min_samples_split`**: Minimum number of samples required to split an internal node (values tested: 2, 5, 10).
+
+The best-performing hyperparameters were:
+- **`max_depth`**: 3
+- **`min_samples_split`**: 5
+
+These values balance model complexity and generalization, preventing overfitting while capturing sufficient detail in the data.
+
+---
+
+### Model Performance
+- **Train MAE**: 119.45 minutes  
+- **Test MAE**: 115.69 minutes  
+
+Compared to the baseline model's test MAE of 118.47 minutes, the final model reduced the prediction error by approximately **2.78 minutes** on unseen data. This improvement demonstrates the value of the additional features and the Gradient Boosting Regressor in capturing the variability in cooking times more effectively.
+
+---
+
+### Conclusion
+The final model outperforms the baseline model in terms of test MAE, indicating better generalization to new data. By incorporating meaningful features like the interaction term and refining the modeling algorithm through hyperparameter tuning, the final model provides more accurate predictions of cooking times.
+
 
 ----
 
 ## Fairness Analysis
 
-To assess fairness, I examined whether the model’s predictions varied significantly for recipes categorized as "protein-rich" (high `prop_protein`) versus others. By comparing prediction errors across these groups, I ensured that the model performs equitably regardless of recipe composition.
+For our fairness analysis, I split the recipes into two groups: high-protein recipes and low-protein recipes. High-protein recipes were defined as those with `prop_protein > 0.35`, while low-protein recipes were those with `prop_protein <= 0.35`. I chose 0.35 as the threshold because it represents a meaningful distinction between recipes with significantly higher or lower protein proportions. This value was informed by the distribution of `prop_protein` values in the dataset, where recipes with `prop_protein` above 0.35 often corresponded to high-protein meals like meat-heavy dishes or protein shakes. By contrast, recipes with `prop_protein` below 0.35 included more balanced or carbohydrate-heavy meals.
+
+I used **Mean Absolute Error (MAE)** as the evaluation metric to assess fairness. MAE measures the average discrepancy between predicted and actual cooking times, making it ideal for a regression task. This metric ensures that I can evaluate whether the model predicts cooking times with equal accuracy for both groups.
+
+### Hypotheses:
+- **Null Hypothesis**: The model is fair. Its MAE for high-protein recipes and low-protein recipes is roughly the same, and any observed differences are due to random chance.
+- **Alternative Hypothesis**: The model is unfair. Its MAE for high-protein recipes is different from its MAE for low-protein recipes.
+
+### Test Statistic:
+The difference in MAE between the two groups:  
+**MAE (high-protein recipes) - MAE (low-protein recipes).**
+
+### Significance Level:
+I set the significance level at 0.05.
+
+---
+
+### Results:
+To conduct the fairness analysis, I calculated the observed difference in MAE between the two groups, which was **0.01**. I then shuffled the group labels (`is_high_protein`) 1000 times to generate a null distribution of MAE differences. After running the permutation test, I obtained a p-value of **0.9**.
+
+Since the p-value is greater than the significance level of 0.05, I fail to reject the null hypothesis. This indicates that the model's performance does not significantly differ between high-protein and low-protein recipes.
+<iframe
+  src="assets/fairness.html"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
+
+---
+
+### Conclusion:
+The model performs equally well for both high-protein and low-protein recipes, as evidenced by the similar MAE values across the two groups. This suggests that the model is fair with respect to its handling of recipes with different protein proportions. By choosing a threshold of 0.35 for `prop_protein`, we ensured a meaningful division based on the characteristics of the dataset, reflecting real-world dietary patterns. This fairness analysis highlights the model's robustness and reliability across varying recipe types.
+
